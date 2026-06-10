@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import './App.css'
 import { products } from './data/products'
 
@@ -9,6 +10,8 @@ function formatCurrency(valueInCents: number) {
 }
 
 function App() {
+  const [selectedProductId, setSelectedProductId] = useState(products[0].id)
+
   return (
     <main className="app-shell">
       <section className="checkout-page" aria-labelledby="page-title">
@@ -28,25 +31,35 @@ function App() {
           </div>
 
           <div className="product-list">
-            {products.map((product) => (
-              <article className="product-card" key={product.id}>
-                <div>
-                  <h3>{product.name}</h3>
-                  <p>{product.model}</p>
-                </div>
+            {products.map((product) => {
+              const isSelected = product.id === selectedProductId
 
-                <dl>
+              return (
+                <button
+                  aria-pressed={isSelected}
+                  className={`product-card ${isSelected ? 'selected' : ''}`}
+                  key={product.id}
+                  onClick={() => setSelectedProductId(product.id)}
+                  type="button"
+                >
                   <div>
-                    <dt>Preço</dt>
-                    <dd>{formatCurrency(product.priceInCents)}</dd>
+                    <h3>{product.name}</h3>
+                    <p>{product.model}</p>
                   </div>
-                  <div>
-                    <dt>Estoque</dt>
-                    <dd>{product.stock} unidades</dd>
-                  </div>
-                </dl>
-              </article>
-            ))}
+
+                  <dl>
+                    <div>
+                      <dt>Preço</dt>
+                      <dd>{formatCurrency(product.priceInCents)}</dd>
+                    </div>
+                    <div>
+                      <dt>Estoque</dt>
+                      <dd>{product.stock} unidades</dd>
+                    </div>
+                  </dl>
+                </button>
+              )
+            })}
           </div>
         </section>
       </section>

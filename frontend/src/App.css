@@ -84,11 +84,35 @@ h2 {
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+  width: 100%;
   min-height: 112px;
   padding: 18px;
   border: 1px solid #e3ebe6;
   border-radius: 8px;
   background: #fbfdfc;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.product-card:hover,
+.product-card.selected {
+  border-color: #1f7a5a;
+  background: #f0faf5;
+}
+
+.product-card:hover {
+  transform: translateY(-1px);
+}
+
+.product-card:focus-visible {
+  outline: 3px solid rgba(31, 122, 90, 0.28);
+  outline-offset: 3px;
 }
 
 .product-card h3 {
