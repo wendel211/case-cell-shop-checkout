@@ -1,90 +1,60 @@
-# Respostas conceituais - Desafio CaseCellShop
+# Respostas Conceituais - Desafio CaseCellShop
 
 ## Pergunta 1 - Leitura inicial dos problemas
 
-### Problema 1 - Performance da vitrine
+A loja virtual consulta o ERP diretamente para buscar produtos, preços e estoque. Como o ERP é um sistema central e monolítico, ele pode não estar preparado para receber milhões de acessos da vitrine ao mesmo tempo.
 
-**O que pode estar causando**
-
-A loja parece depender muito do ERP para carregar a vitrine. Então, sempre que alguém acessa os produtos, a aplicação precisa consultar o ERP para buscar informações como preço, estoque e dados do produto.
-
-Como o ERP também cuida de outras áreas importantes da empresa, ele pode ficar sobrecarregado com muitos acessos ao mesmo tempo. Também pode estar faltando cache para evitar consultas repetidas.
-
-**Impacto**
-
-Para o cliente, a loja fica lenta e a experiência piora. Muitas pessoas podem desistir antes de comprar.
-
-Para o negócio, isso pode gerar menos vendas, mais abandono da página e perda de confiança na marca.
-
-**Como eu investigaria**
-
-Eu começaria olhando os tempos de resposta da API do ERP e quais chamadas são feitas ao abrir a vitrine. Depois, pensaria em usar cache ou uma base de leitura para diminuir a dependência direta do ERP.
+Também parece não existir uma camada de cache. Então informações que poderiam ser reaproveitadas, como nome do produto, preço e descrição, acabam sendo buscadas várias vezes no ERP. O cliente espera muito tempo para ver os produtos e pode desistir da compra antes mesmo de começar. Para o negócio, isso reduz vendas, aumenta abandono da loja e piora a imagem da empresa. Eu começaria analisando o tempo de resposta da API do ERP e quais chamadas são feitas quando a vitrine carrega. Depois, tentaria colocar uma camada de cache ou uma base de leitura para que a loja não precise consultar o ERP em toda requisição.
 
 ### Problema 2 - Consistência de estoque
 
-**O que pode estar causando**
+O problema provavelmente acontece quando mais de um cliente tenta comprar o mesmo produto ao mesmo tempo. Se duas requisições leem o estoque antes de ele ser atualizado, as duas podem entender que ainda existe produto disponível.
 
-Esse problema provavelmente acontece quando duas ou mais pessoas tentam comprar o mesmo produto ao mesmo tempo. Se o sistema consulta o estoque antes de atualizar a quantidade disponível, mais de uma compra pode ser aprovada para o mesmo item.
+Isso indica falta de controle de concorrência no momento do checkout. A validação e a baixa do estoque precisam acontecer de forma segura. A empresa acaba vendendo produtos que não possui. Isso gera cancelamentos, estornos, retrabalho para o time interno e frustração para o cliente. Além disso, o cliente perde confiança na loja quando compra um item e depois descobre que ele não está disponível.
 
-Na prática, faltaria uma forma segura de validar e baixar o estoque no momento da compra.
-
-**Impacto**
-
-O cliente pode comprar um produto e depois descobrir que ele não está disponível. Isso gera frustração.
-
-Para a empresa, causa cancelamentos, estornos, retrabalho no atendimento e perda de confiança.
-
-**Como eu investigaria**
-
-Eu verificaria como o checkout valida o estoque e se a baixa acontece junto com a confirmação da compra. Uma melhoria seria reservar o estoque no momento do checkout, garantindo que a mesma unidade não seja vendida duas vezes.
+Eu investigaria como o estoque é validado no checkout e se a baixa é feita de forma atômica. Uma melhoria seria criar uma reserva de estoque no momento da compra, garantindo que duas compras não consumam a mesma unidade.
 
 ### Problema 3 - Resiliência do checkout
 
-**O que pode estar causando**
+O checkout depende de uma chamada síncrona para o ERP. O cliente finaliza a compra, a loja chama o ERP, o ERP processa o pedido e só depois a loja responde para o cliente.
 
-O checkout parece depender de uma resposta imediata do ERP. O cliente finaliza a compra, a loja chama o ERP, e só depois de o ERP processar tudo a loja responde.
+Se o ERP demora demais, a requisição pode dar timeout e o cliente perde a compra, mesmo estando no último passo.
 
-Se o ERP demora demais, a requisição pode dar timeout e a compra falha.
+Esse é um problema muito crítico porque acontece no momento da conversão. O cliente já decidiu comprar, mas não consegue concluir o pedido.
 
-**Impacto**
-
-Esse problema é crítico porque acontece no final da jornada. O cliente já escolheu o produto e decidiu comprar, mas não consegue concluir.
-
-Para o negócio, isso representa perda direta de vendas. Também pode gerar dúvida se o pedido foi criado ou não.
-
-**Como eu investigaria**
-
-Eu olharia logs, tempos de resposta e erros de timeout no checkout. Como melhoria, pensaria em registrar o pedido rapidamente e deixar a comunicação mais demorada com o ERP para uma fila em segundo plano.
+Para o negócio, isso significa perda direta de receita. Também pode gerar inconsistência se o ERP processar algo, mas a loja não receber a resposta. Eu verificaria logs e tempos de resposta do ERP durante o checkout. Como melhoria, pensaria em registrar o pedido rapidamente na loja e processar a comunicação com o ERP em segundo plano, usando fila e tentativas de reprocessamento.
 
 ## Pergunta 2 - Infraestrutura e serviços de apoio
 
-Eu tentaria fazer a loja depender menos do ERP em tempo real. O ERP continuaria sendo o sistema principal, mas a loja teria camadas de apoio para aguentar mais acessos.
+Para suportar muitos acessos, eu tentaria diminuir a dependência direta do ERP em cada requisição da loja. O ERP continuaria sendo importante, mas a vitrine e parte do checkout teriam camadas intermediárias para absorver melhor o volume de acessos.
 
-**Cache**
+Alguns conceitos e serviços que ajudariam:
 
-Um cache, como Redis, ajudaria a guardar dados muito acessados, como produtos e preços. Isso deixaria a vitrine mais rápida e reduziria chamadas ao ERP.
+### Cache
 
-**CDN**
+Um cache, como Redis, poderia guardar informações de produtos, preços e estoque por um tempo curto. Assim, a loja responderia mais rápido e faria menos chamadas ao ERP.
 
-Uma CDN ajudaria a entregar imagens das capinhas, CSS e JavaScript com mais velocidade. Isso melhora a experiência do usuário e diminui carga no servidor.
+### CDN
 
-**Base de leitura**
+Uma CDN poderia entregar arquivos estáticos, como imagens das capinhas, CSS e JavaScript. Isso melhora o tempo de carregamento para o usuário e reduz carga no datacenter da empresa.
 
-Uma base de leitura poderia receber uma cópia dos dados importantes do ERP. Assim, a vitrine consultaria essa base em vez de consultar o ERP toda hora.
+### Banco ou base de leitura
 
-**Fila**
+Uma base de leitura poderia receber dados sincronizados do ERP. A vitrine consultaria essa base em vez de consultar diretamente o ERP toda hora.
 
-Uma fila ajudaria em tarefas mais demoradas, como faturamento e integração com o ERP. A loja poderia registrar o pedido e processar essas etapas em segundo plano.
+### Fila
 
-**Monitoramento**
+Uma fila ajudaria em processos mais lentos, como faturamento e integração com o ERP. Em vez de deixar o cliente esperando muito tempo, a aplicação poderia registrar a compra e processar o restante em segundo plano.
 
-Também é importante acompanhar tempo de resposta, erros e pedidos com falha. Assim fica mais fácil descobrir problemas antes que afetem muitos clientes.
+### Monitoramento
+
+Também seria importante acompanhar métricas como tempo de resposta, erros, quantidade de pedidos com falha e tamanho da fila. Sem monitoramento, fica difícil saber onde está o gargalo.
 
 ## Pergunta 3 - SDD: Spec-Driven Development
 
-Antes de implementar o `POST /checkout`, eu definiria primeiro o que a rota precisa receber e responder.
+Antes de implementar o endpoint `POST /checkout`, eu definiria primeiro o contrato da API.
 
-Para este desafio, a entrada poderia ser:
+Para este desafio, o endpoint precisa receber:
 
 ```json
 {
@@ -93,9 +63,12 @@ Para este desafio, a entrada poderia ser:
 }
 ```
 
-O `productId` identifica o produto, e o `quantity` informa a quantidade que o cliente quer comprar.
+Onde:
 
-Em caso de sucesso, a resposta poderia ser:
+- `productId` é o identificador do produto.
+- `quantity` é a quantidade que o cliente deseja comprar.
+
+Em caso de sucesso, a API poderia retornar `201 Created`:
 
 ```json
 {
@@ -108,16 +81,16 @@ Em caso de sucesso, a resposta poderia ser:
 }
 ```
 
-Em caso de erro, a API deve retornar uma mensagem clara:
+Em caso de erro, a API deve retornar uma mensagem clara e um status HTTP adequado:
 
-| Status | Quando usar |
+| Status | Situação |
 | --- | --- |
-| `400 Bad Request` | Dados inválidos |
+| `400 Bad Request` | Dados inválidos, como quantidade menor que 1 |
 | `404 Not Found` | Produto não encontrado |
 | `409 Conflict` | Estoque insuficiente |
-| `503 Service Unavailable` | Serviço indisponível |
+| `503 Service Unavailable` | Serviço temporariamente indisponível |
 
-Exemplo:
+Exemplo de erro:
 
 ```json
 {
@@ -125,42 +98,44 @@ Exemplo:
 }
 ```
 
-Definir esse contrato antes ajuda porque o frontend sabe o que enviar, o backend sabe o que validar e os testes ficam mais fáceis de escrever.
+Definir esse contrato antes de programar é importante porque deixa claro o que o frontend deve enviar, o que o backend deve responder e quais erros precisam ser tratados. Isso também ajuda a escrever testes e evita retrabalho.
 
 ## Pergunta 4 - TDD: Test-Driven Development
 
-Eu escreveria testes para os principais casos do `POST /checkout`:
+Para o endpoint `POST /checkout`, eu escreveria testes para os principais cenários:
 
-1. Compra com sucesso quando existe estoque.
-2. Erro quando o produto não é enviado.
-3. Erro quando a quantidade é inválida.
+1. Compra realizada com sucesso quando o produto existe e tem estoque suficiente.
+2. Erro quando `productId` não é enviado.
+3. Erro quando `quantity` é zero, negativa ou não é um número.
 4. Erro quando o produto não existe.
-5. Erro quando o estoque é insuficiente.
-6. Verificar se o estoque diminui depois da compra.
-7. Verificar se duas compras ao mesmo tempo não vendem mais do que existe em estoque.
+5. Erro quando a quantidade solicitada é maior que o estoque disponível.
+6. Verificar se o estoque diminui depois de uma compra com sucesso.
+7. Verificar se o sistema evita duas compras consumindo o mesmo estoque ao mesmo tempo.
 
-Escrever os testes antes ajuda a pensar melhor nas regras antes de implementar. Primeiro eu defino o comportamento esperado, depois escrevo o código para fazer esses testes passarem.
+Eu vejo vantagem em escrever os testes antes porque isso ajuda a pensar no comportamento esperado antes de sair codificando. Os testes funcionam como uma espécie de guia: primeiro eu defino o que a rota precisa fazer, depois implemento até os testes passarem.
 
-Isso também ajuda a evitar que uma mudança futura quebre uma regra importante do checkout.
+Também ajuda a evitar que uma mudança futura quebre uma regra importante, como permitir compra sem estoque.
 
 ## Pergunta 5 - Uso de IA no desenvolvimento
 
-Eu usaria IA como apoio para pensar em soluções, revisar ideias e lembrar de cenários de teste. Alguns prompts que eu usaria:
+Se eu fosse usar IA para ajudar no problema de furo de estoque, eu faria perguntas bem específicas, sempre revisando a resposta antes de aplicar.
+
+Exemplos de prompts que eu usaria:
 
 ```text
-Estou criando um checkout em Node.js e TypeScript. Como posso evitar que duas compras ao mesmo tempo consumam o mesmo item do estoque?
+Estou implementando um checkout em Node.js e TypeScript. Como posso evitar que duas compras simultâneas consumam o mesmo item de estoque?
 ```
 
 ```text
-Quais testes são importantes para garantir que um checkout não venda mais produtos do que o estoque disponível?
+Quais testes devo escrever para garantir que meu endpoint POST /checkout não venda mais produtos do que o estoque disponível?
 ```
 
 ```text
-Revise este fluxo de checkout e aponte possíveis problemas de validação ou concorrência.
+Revise este fluxo de checkout e aponte possíveis problemas de concorrência, validação e atualização de estoque.
 ```
 
 ```text
-Explique de forma simples como funciona uma reserva de estoque em um e-commerce.
+Explique de forma simples a diferença entre reserva de estoque, baixa de estoque e controle de concorrência em um e-commerce.
 ```
 
-Mesmo usando IA, eu revisaria tudo antes de aplicar. A IA ajuda bastante, mas a responsabilidade de entender, testar e entregar a solução continua sendo minha.
+Eu usaria a IA como apoio para pensar em soluções, revisar o código e lembrar de cenários de teste. Mesmo assim, eu não copiaria tudo automaticamente. A responsabilidade final seria minha, validando com testes e entendendo o que foi implementado.
