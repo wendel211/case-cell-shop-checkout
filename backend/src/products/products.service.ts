@@ -30,4 +30,15 @@ export class ProductsService {
   findAll(): Product[] {
     return this.products;
   }
+
+  findById(productId: string): Product | undefined {
+    return this.products.find((product) => product.id === productId);
+  }
+
+  decreaseStock(productId: string, quantity: number): void {
+    const product = this.findById(productId);
+    if (product) {
+      product.stock -= quantity;
+    }
+  }
 }
