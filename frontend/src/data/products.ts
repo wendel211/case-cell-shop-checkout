@@ -7,6 +7,8 @@ export type Product = {
   imageUrl: string
 }
 
+export type ApiProduct = Omit<Product, 'imageUrl'>
+
 export const products: Product[] = [
   {
     id: 'case-iphone-15',
@@ -33,3 +35,18 @@ export const products: Product[] = [
     imageUrl: '/fosca%20preta.jpg',
   },
 ]
+
+const imageByProductId = products.reduce<Record<string, string>>(
+  (images, product) => ({
+    ...images,
+    [product.id]: product.imageUrl,
+  }),
+  {},
+)
+
+export function addProductImages(apiProducts: ApiProduct[]): Product[] {
+  return apiProducts.map((product) => ({
+    ...product,
+    imageUrl: imageByProductId[product.id] ?? '/favicon.svg',
+  }))
+}

@@ -1,6 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
-import { products as initialProducts } from './data/products'
+import {
+  addProductImages,
+  products as initialProducts,
+  type ApiProduct,
+} from './data/products'
+
+const API_BASE_URL = 'http://localhost:3333'
 
 function formatCurrency(valueInCents: number) {
   return new Intl.NumberFormat('pt-BR', {
@@ -23,6 +29,7 @@ function App() {
   const [selectedProductId, setSelectedProductId] = useState(products[0].id)
   const [quantity, setQuantity] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
+  const [isProductsLoading, setIsProductsLoading] = useState(false)
   const [checkoutResult, setCheckoutResult] = useState<CheckoutResult | null>(null)
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -32,6 +39,40 @@ function App() {
   const totalInCents = selectedProduct.priceInCents * quantity
   const canDecrease = quantity > 1
   const canIncrease = quantity < selectedProduct.stock
+
+  useEffect(() => {
+    async function loadProducts() {
+      setIsProductsLoading(true)
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/products`)
+
+        if (!response.ok) {
+          throw new Error('Erro ao buscar produtos.')
+        }
+
+        const apiProducts: ApiProduct[] = await response.json()
+        const productsWithImages = addProductImages(apiProducts)
+
+        if (productsWithImages.length === 0) {
+          throw new Error('Nenhum produto encontrado.')
+        }
+
+        setProducts(productsWithImages)
+        setSelectedProductId((currentProductId) =>
+          productsWithImages.some((product) => product.id === currentProductId)
+            ? currentProductId
+            : productsWithImages[0].id,
+        )
+      } catch {
+        setErrorMessage('Não foi possível carregar os produtos.')
+      } finally {
+        setIsProductsLoading(false)
+      }
+    }
+
+    loadProducts()
+  }, [])
 
   function handleSelectProduct(productId: string) {
     setSelectedProductId(productId)
@@ -44,7 +85,7 @@ function App() {
     setErrorMessage('')
 
     try {
-      const response = await fetch('http://localhost:3333/checkout', {
+      const response = await fetch(`${API_BASE_URL}/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -114,7 +155,7 @@ function App() {
           <section className="product-section animate-fade-up delay-1" aria-labelledby="products-title">
             <div className="section-heading">
               <h2 id="products-title">Produtos disponíveis</h2>
-              <span>{products.length} modelos</span>
+              <span>{isProductsLoading ? 'Carregando...' : `${products.length} modelos`}</span>
             </div>
 
             <div className="product-list">
@@ -220,7 +261,7 @@ function App() {
               className="checkout-button"
               type="button"
               onClick={handleCheckout}
-              disabled={isLoading || selectedProduct.stock === 0}
+              disabled={isLoading || isProductsLoading || selectedProduct.stock === 0}
             >
               {isLoading ? 'Processando...' : 'Finalizar compra'}
             </button>
