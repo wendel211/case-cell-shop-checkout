@@ -103,7 +103,6 @@ function App() {
               as informações sempre visíveis.
             </p>
           </div>
-          <span className="status-pill">Estoque validado</span>
         </header>
 
         <div className="checkout-grid">
@@ -126,7 +125,9 @@ function App() {
                     onClick={() => handleSelectProduct(product.id)}
                     type="button"
                   >
-                    <span className="case-preview" aria-hidden="true" />
+                    <span className="case-preview" aria-hidden="true">
+                      <img src={product.imageUrl} alt="" />
+                    </span>
 
                     <div className="product-info">
                       <h3>{product.name}</h3>
@@ -156,8 +157,13 @@ function App() {
             </div>
 
             <div className="summary-product">
-              <strong>{selectedProduct.name}</strong>
-              <span>{selectedProduct.model}</span>
+              <span className="summary-image" aria-hidden="true">
+                <img src={selectedProduct.imageUrl} alt="" />
+              </span>
+              <div>
+                <strong>{selectedProduct.name}</strong>
+                <span>{selectedProduct.model}</span>
+              </div>
             </div>
 
             <div className="quantity-row">

@@ -4,6 +4,7 @@ export type Product = {
   model: string
   priceInCents: number
   stock: number
+  imageUrl: string
 }
 
 export const products: Product[] = [
@@ -13,6 +14,7 @@ export const products: Product[] = [
     model: 'iPhone 15',
     priceInCents: 3990,
     stock: 10,
+    imageUrl: '/silicone.jpeg',
   },
   {
     id: 'case-galaxy-s24',
@@ -20,6 +22,7 @@ export const products: Product[] = [
     model: 'Galaxy S24',
     priceInCents: 4990,
     stock: 5,
+    imageUrl: '/s24.jpg',
   },
   {
     id: 'case-moto-g84',
@@ -27,5 +30,6 @@ export const products: Product[] = [
     model: 'Moto G84',
     priceInCents: 2990,
     stock: 8,
+    imageUrl: '/fosca%20preta.jpg',
   },
 ]
