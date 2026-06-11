@@ -1,18 +1,20 @@
 # CaseCellShop
 
-Mini checkout de capinhas desenvolvido para o desafio Junior Full Stack.
+Mini checkout de capinhas desenvolvido como solução para o desafio técnico Junior Full Stack.
 
-O projeto tem um backend em NestJS com uma API simples de produtos e checkout, e um frontend em React com Vite consumindo essa API.
+O projeto é composto por um backend em NestJS expondo uma API REST de produtos e checkout, e um frontend em React com Vite consumindo essa API.
 
-## Tecnologias
+## Stack
 
-- Backend: NestJS, TypeScript e Jest
-- Frontend: React, TypeScript e Vite
-- Estilo: CSS puro com interface inspirada nas cores da PeoplePro
+| Camada | Tecnologias |
+|--------|------------|
+| Backend | NestJS, TypeScript, Jest |
+| Frontend | React, TypeScript, Vite |
+| Estilo | CSS puro com identidade visual inspirada nas cores da PeoplePro |
 
-## Como rodar o projeto
+## Como executar
 
-Clone o repositorio e instale as dependencias separadamente no backend e no frontend.
+Clone o repositório e instale as dependências separadamente em cada camada.
 
 ### Backend
 
@@ -22,9 +24,9 @@ npm install
 npm run start:dev
 ```
 
-O backend roda em:
+A API estará disponível em:
 
-```text
+```
 http://localhost:3333
 ```
 
@@ -38,7 +40,7 @@ npm install
 npm run dev
 ```
 
-O Vite vai mostrar a URL local do frontend no terminal.
+O Vite exibirá a URL local no terminal após a inicialização.
 
 ## Endpoints da API
 
@@ -48,7 +50,7 @@ O Vite vai mostrar a URL local do frontend no terminal.
 GET /health
 ```
 
-Retorna uma mensagem simples para confirmar que a API esta no ar.
+Retorna uma mensagem de confirmação indicando que a API está operacional.
 
 ### Listar produtos
 
@@ -56,9 +58,9 @@ Retorna uma mensagem simples para confirmar que a API esta no ar.
 GET /products
 ```
 
-Retorna as capinhas disponiveis, com preco e estoque.
+Retorna a lista de capinhas disponíveis com preço e estoque atual.
 
-Exemplo de resposta:
+**Exemplo de resposta:**
 
 ```json
 [
@@ -78,7 +80,7 @@ Exemplo de resposta:
 POST /checkout
 ```
 
-Body:
+**Body:**
 
 ```json
 {
@@ -87,7 +89,7 @@ Body:
 }
 ```
 
-Resposta de sucesso:
+**Resposta de sucesso (`200`):**
 
 ```json
 {
@@ -100,43 +102,49 @@ Resposta de sucesso:
 }
 ```
 
-Possiveis erros:
+**Respostas de erro:**
 
-- `400`: dados invalidos
-- `404`: produto nao encontrado
-- `409`: estoque insuficiente
+| Status | Descrição |
+|--------|-----------|
+| `400` | Dados inválidos na requisição |
+| `404` | Produto não encontrado |
+| `409` | Estoque insuficiente para a quantidade solicitada |
 
-## Como testar
+## Validação e build
 
 ### Backend
 
 ```bash
 cd backend
-npm run test
-npm run test:e2e
-npm run build
+npm run test        # testes unitários
+npm run test:e2e    # testes end-to-end
+npm run build       # build de produção
 ```
 
 ### Frontend
 
 ```bash
 cd frontend
-npm run lint
-npm run build
+npm run lint        # análise estática
+npm run build       # build de produção
 ```
 
-## Decisoes tomadas
+## Decisões técnicas
 
-- Usei NestJS no backend porque a vaga tem mais relacao com essa stack.
-- Mantive os dados em memoria para deixar o desafio simples e facil de rodar.
-- O checkout valida produto, quantidade e estoque antes de confirmar a compra.
-- O frontend busca os produtos na API e mantem apenas as imagens no proprio frontend.
-- A interface mostra carregamento, erro e confirmacao de compra para deixar o fluxo mais completo.
+**NestJS no backend**: Escolha alinhada com a stack mencionada na vaga, aproveitando o sistema de módulos, injeção de dependência e suporte nativo a TypeScript.
+
+**Dados em memória**: Repositório in-memory para manter o projeto autocontido e sem dependências externas, facilitando a execução local sem configuração de banco de dados.
+
+**Validação no checkout**: O endpoint valida produto, quantidade e disponibilidade de estoque antes de confirmar o pedido, retornando erros semânticos com os status HTTP apropriados.
+
+**Imagens no frontend**: Os assets de imagem são mantidos no bundle do frontend; a API é responsável apenas pelos dados de produto.
+
+**Estados de UI explícitos**: O frontend trata os estados de carregamento, erro e confirmação de compra, tornando o fluxo mais robusto e a experiência mais previsível.
 
 ## Respostas conceituais
 
-As respostas da parte conceitual estao em:
+As respostas da parte conceitual estão em:
 
-```text
+```
 docs/respostas-conceituais.md
 ```
