@@ -24,6 +24,7 @@ function App() {
   const [quantity, setQuantity] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [checkoutResult, setCheckoutResult] = useState<CheckoutResult | null>(null)
+  const [errorMessage, setErrorMessage] = useState('')
 
   const selectedProduct =
     products.find((product) => product.id === selectedProductId) ?? products[0]
@@ -35,10 +36,13 @@ function App() {
   function handleSelectProduct(productId: string) {
     setSelectedProductId(productId)
     setQuantity(1)
+    setErrorMessage('')
   }
 
   async function handleCheckout() {
     setIsLoading(true)
+    setErrorMessage('')
+
     try {
       const response = await fetch('http://localhost:3333/checkout', {
         method: 'POST',
@@ -51,7 +55,7 @@ function App() {
 
       if (!response.ok) {
         const error = await response.json()
-        alert(error.message || 'Erro ao finalizar compra.')
+        setErrorMessage(error.message || 'Erro ao finalizar compra.')
         return
       }
 
@@ -67,7 +71,7 @@ function App() {
       )
       setQuantity(1)
     } catch {
-      alert('Erro de conexão com o servidor.')
+      setErrorMessage('Erro de conexão com o servidor.')
     } finally {
       setIsLoading(false)
     }
@@ -225,9 +229,24 @@ function App() {
               <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>lock</span>
               Pagamento 100% seguro
             </div>
+
+            {errorMessage && (
+              <p className="error-message" role="alert">
+                {errorMessage}
+              </p>
+            )}
           </aside>
         </div>
       </section>
+
+      <footer className="brand-footer" aria-label="Marca PeoplePro">
+        <img src="/png%20logo.png" alt="PeoplePro" />
+        <ul>
+          <li><a href="#">Sobre</a></li>
+          <li><a href="#">Para empresas</a></li>
+          <li><a href="#">Contato</a></li>
+        </ul>
+      </footer>
 
       {/* Success Modal */}
       {checkoutResult && (

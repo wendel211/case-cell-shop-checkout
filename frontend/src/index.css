@@ -2,19 +2,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
 :root {
-  --primary: #1f7a5a;
-  --primary-light: #2f9d73;
-  --secondary: #0f766e;
-  --bg-page: #f6f8f6;
-  --bg-card: rgba(255, 255, 255, 0.92);
-  --bg-card-hover: #f4fbf7;
-  --border-subtle: #dfe8e3;
-  --border-active: rgba(31, 122, 90, 0.34);
-  --text-primary: #111a16;
-  --text-secondary: #52635a;
-  --text-muted: #74847c;
-  --shadow-soft: rgba(33, 53, 45, 0.1);
-  --shadow-focus: rgba(31, 122, 90, 0.18);
+  --primary: #ff9d2e;
+  --primary-light: #ffb45f;
+  --secondary: #f28a1a;
+  --bg-page: #eeeeee;
+  --bg-card: #ffffff;
+  --bg-card-hover: #fff7ed;
+  --border-subtle: #d7d7d7;
+  --border-active: rgba(255, 157, 46, 0.46);
+  --text-primary: #101010;
+  --text-secondary: #343434;
+  --text-muted: #666666;
+  --shadow-soft: rgba(0, 0, 0, 0.16);
+  --shadow-focus: rgba(255, 157, 46, 0.22);
 
   font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     'Segoe UI', sans-serif;
@@ -33,7 +33,5 @@
 body {
   min-height: 100vh;
   margin: 0;
-  background:
-    radial-gradient(circle at 8% 0%, rgba(31, 122, 90, 0.1), transparent 28rem),
-    linear-gradient(180deg, #fbfcfb 0%, var(--bg-page) 100%);
+  background: var(--bg-page);
 }
